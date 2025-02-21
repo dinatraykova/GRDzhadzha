@@ -20,8 +20,10 @@
 #include "FixedGridsTaggingCriterion.hpp"
 
 // Problem specific includes
+#include "Circulation.hpp"
 #include "ComplexScalarField.hpp"
 #include "ComplexScalarPotential.hpp"
+#include "CustomExtraction.hpp"
 #include "EnergyConservation.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
@@ -80,8 +82,10 @@ void BoostedBHScalarLevel::specificPostTimeStep()
         LinearMomConservation<ScalarFieldWithPotential, BoostedBH>
             linear_momenta(scalar_field, boosted_bh, direction, m_dx,
                            m_p.center);
-        BoxLoops::loop(make_compute_pack(energies, linear_momenta), m_state_new,
-                       m_state_diagnostics, SKIP_GHOST_CELLS);
+        Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
+            scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd
         if (m_p.activate_excision == 1)
@@ -139,6 +143,15 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                          m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ, c_circ));
+            CustomExtraction circ_extraction(c_circ, m_p.lineout_num_points,
+                                             m_p.r_circle, m_p.circle_center,
+                                             m_dt, m_time, m_restart_time);
+            circ_extraction.execute_query(m_gr_amr.m_interpolator,
+                                          m_p.data_path + "circulation_points");
         }
     }
 }

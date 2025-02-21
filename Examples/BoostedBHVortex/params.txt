@@ -8,17 +8,17 @@ verbosity = 0
 
 # location / naming of output files
 output_path = "" # Main path for all files. Must exist!
-chk_prefix = BoostedBH_v5_bessel_m05_
-plot_prefix = BoostedBH_v5_bessel_m05p_
-#restart_file = BoostedBH_v5_bessel_m05_000000.3d.hdf5
+chk_prefix = BoostedBH_v05_m05_
+plot_prefix = BoostedBH_v05_m05p_
+#restart_file = BoostedBH_v05_m05_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 100
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 3
-num_plot_vars = 6
-plot_vars = phi_Re rhoEnergy fluxEnergy rhoLinMom fluxLinMom sourceLinMom
+num_plot_vars = 8
+plot_vars = chi circ phi_Re rhoEnergy fluxEnergy rhoLinMom fluxLinMom sourceLinMom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -40,7 +40,7 @@ print_progress_only_to_rank_0 = 1
 scalar_mass = 0.5
 scalar_amplitude = 1.
 scalar_omega = 0.1
-scalar_center = 2098.0 2048.0 0.0
+scalar_center = 1074.0 1024.0 0.0
 
 # Boosted BH initial data, boost in x direction
 bh_mass = 1.0
@@ -49,14 +49,19 @@ bh_velocity = 0.5 # in unit of c (i.e. 0<v<1)
 ################################################
 # Diagnostic extraction parameters
 
+# Circle extraction params
+lineout_num_points = 36
+r_circle = 20.
+#circle_center = 1024.0 1024.0 0.0
+
 # For flux (surface) extraction
 activate_extraction = 1
 # write_extraction = 0
 
 # Set to match inner and outer radii above
-num_extraction_radii = 2
-extraction_levels = 0 0
-extraction_radii = 3.0 200.0
+num_extraction_radii = 4
+extraction_levels = 0 0 0 0
+extraction_radii = 10.0 20.0 50.0 100.
 
 num_points_phi = 36
 num_points_theta = 24
@@ -65,8 +70,8 @@ num_points_theta = 24
 # Default value is the same as activate_extraction
 # activate_excision = 1
 # By default these are set to the values of the extraction radii above
-# inner_r = 3.0
-# outer_r = 200.0
+inner_r = 0.5
+outer_r = 300.0
 
 #################################################
 # Grid parameters
@@ -82,10 +87,10 @@ N1 = 128
 N2 = 128
 N3 = 64
 
-L_full = 4096
+L_full = 2048
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 7 # There are (max_level+1) grids, so min is zero
+max_level = 6 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -126,7 +131,8 @@ lo_boundary = 3 3 2
 vars_parity            = 0 0 0 0   #phi and Pi (Re and Im)
 vars_parity_diagnostic = 0 0 0     #chi, rhoLinMom and rhoEnergy
 		         0 0 0     #fluxLinMom, fluxEnergy and sourceLinMom
-
+			 0   	   #circulation
+			 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
 num_nonzero_asymptotic_vars = 0
@@ -145,8 +151,8 @@ extrapolation_order = 0
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.02
-stop_time = 500.0
+dt_multiplier = 0.03
+stop_time = 200.0
 #max_steps = 4
 
 nan_check = 1

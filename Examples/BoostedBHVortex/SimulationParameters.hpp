@@ -36,6 +36,11 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         pp.load("bh_mass", bg_params.mass, 1.0);
         pp.load("bh_velocity", bg_params.velocity, 0.0);
         pp.load("bh_center", bg_params.center, center);
+
+        // Circle extraction params
+        pp.load("lineout_num_points", lineout_num_points, 36);
+        pp.load("r_circle", r_circle, 20.);
+        pp.load("circle_center", circle_center, center);
     }
 
     void check_params()
@@ -61,6 +66,10 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     InitialScalarData::params_t initial_params;
     // Collection of parameters necessary for the metric background
     BoostedBH::params_t bg_params;
+    // Problem specific parameters
+    int lineout_num_points;
+    double r_circle;
+    std::array<double, CH_SPACEDIM> circle_center;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */
