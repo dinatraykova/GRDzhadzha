@@ -28,6 +28,7 @@
 #include "FluxExtraction.hpp"
 #include "InitialScalarData.hpp"
 #include "LinearMomConservation.hpp"
+#include "Circulation.hpp"
 
 // Initial data for field and metric variables
 void BoostedBHScalarLevel::initialData()
@@ -80,7 +81,11 @@ void BoostedBHScalarLevel::specificPostTimeStep()
         LinearMomConservation<ScalarFieldWithPotential, BoostedBH>
             linear_momenta(scalar_field, boosted_bh, direction, m_dx,
                            m_p.center);
-        BoxLoops::loop(make_compute_pack(energies, linear_momenta), m_state_new,
+        Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
+            scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
+        BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation), m_state_new,
                        m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd

@@ -17,8 +17,8 @@ checkpoint_interval = 100
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 3
-num_plot_vars = 7
-plot_vars = phi_Re phi_Im rhoEnergy fluxEnergy rhoLinMom fluxLinMom sourceLinMom
+num_plot_vars = 4
+plot_vars = phi_Re phi_Im rhoEnergy circ 
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -125,7 +125,7 @@ lo_boundary = 3 3 2
 # 4,5,6 = odd xy, yz, xz
 # 7     = odd xyz
 vars_parity            = 0 0 0 0   #phi and Pi (Re and Im)
-vars_parity_diagnostic = 0 0 0     #chi, rhoLinMom and rhoEnergy
+vars_parity_diagnostic = 0 0 0 0   #chi, circ, rhoLinMom and rhoEnergy
 		         0 0 0     #fluxLinMom, fluxEnergy and sourceLinMom
 
 # if sommerfeld boundaries selected, must select
