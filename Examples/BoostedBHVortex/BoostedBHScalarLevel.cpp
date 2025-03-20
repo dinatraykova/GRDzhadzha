@@ -83,7 +83,8 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             linear_momenta(scalar_field, boosted_bh, direction, m_dx,
                            m_p.center);
         Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
-            scalar_field, boosted_bh, m_dx, m_p.center);
+            scalar_field, boosted_bh, m_dx, m_p.circle1_center,
+            m_p.circle2_center, m_p.circle3_center);
         BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
@@ -146,12 +147,33 @@ void BoostedBHScalarLevel::specificPostTimeStep()
 
             m_gr_amr.m_interpolator->refresh(fill_ghosts);
             m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
-                                            Interval(c_circ, c_circ));
-            CustomExtraction circ_extraction(c_circ, m_p.lineout_num_points,
-                                             m_p.r_circle, m_p.circle_center,
-                                             m_dt, m_time, m_restart_time);
-            circ_extraction.execute_query(m_gr_amr.m_interpolator,
-                                          m_p.data_path + "circulation_points");
+                                            Interval(c_circ1, c_circ1));
+            CustomExtraction circ_extraction1(c_circ1, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle1_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction1.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_1");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ2, c_circ2));
+            CustomExtraction circ_extraction2(c_circ2, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle2_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction2.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_2");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ3, c_circ3));
+            CustomExtraction circ_extraction3(c_circ3, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle3_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction3.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_3");
         }
     }
 }

@@ -37,9 +37,8 @@ class InitialScalarData
         const Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
         ComplexScalarField<>::Vars<data_t> vars;
         VarsTools::assign(vars, 0.);
-        const data_t R = coords.get_radius();
-        const data_t R2 = R * R;
-        const data_t rho2 = simd_max(R2 - coords.z * coords.z, 1e-8);
+        const data_t rho2 =
+            simd_max(coords.x * coords.x + coords.y * coords.y, 1e-8);
         const data_t rho = sqrt(rho2);
         const data_t cos_phi = coords.x / rho;
         const data_t sin_phi = coords.y / rho;
@@ -51,8 +50,8 @@ class InitialScalarData
 
         vars.phi_Re = BesselJ * cos_phi;
         vars.phi_Im = BesselJ * sin_phi;
-        vars.Pi_Re = BesselJ * m_params.mass * sin_phi;
-        vars.Pi_Im = -BesselJ * m_params.mass * cos_phi;
+        vars.Pi_Re = BesselJ * omega0 * sin_phi;
+        vars.Pi_Im = -BesselJ * omega0 * cos_phi;
 
         current_cell.store_vars(vars);
     }

@@ -51,17 +51,19 @@ bh_velocity = 0.5 # in unit of c (i.e. 0<v<1)
 
 # Circle extraction params
 lineout_num_points = 36
-r_circle = 20.
-#circle_center = 1024.0 1024.0 0.0
+r_circle = 25.
+circle1_center = 1074.0 1024.0 0.0
+circle2_center = 1024.0 1024.0 0.0
+circle3_center = 974.0 1024.0 0.0
 
 # For flux (surface) extraction
 activate_extraction = 1
 # write_extraction = 0
 
 # Set to match inner and outer radii above
-num_extraction_radii = 4
-extraction_levels = 0 0 0 0
-extraction_radii = 10.0 20.0 50.0 100.
+num_extraction_radii = 2
+extraction_levels = 0 0
+extraction_radii = 3.0 100.0
 
 num_points_phi = 36
 num_points_theta = 24
@@ -70,8 +72,8 @@ num_points_theta = 24
 # Default value is the same as activate_extraction
 # activate_excision = 1
 # By default these are set to the values of the extraction radii above
-inner_r = 0.5
-outer_r = 300.0
+#inner_r = 0.5
+#outer_r = 300.0
 
 #################################################
 # Grid parameters
@@ -131,7 +133,7 @@ lo_boundary = 3 3 2
 vars_parity            = 0 0 0 0   #phi and Pi (Re and Im)
 vars_parity_diagnostic = 0 0 0     #chi, rhoLinMom and rhoEnergy
 		         0 0 0     #fluxLinMom, fluxEnergy and sourceLinMom
-			 0   	   #circulation
+			 0 0 0 	   #circulation
 			 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values

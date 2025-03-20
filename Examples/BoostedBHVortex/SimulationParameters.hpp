@@ -40,7 +40,9 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         // Circle extraction params
         pp.load("lineout_num_points", lineout_num_points, 36);
         pp.load("r_circle", r_circle, 20.);
-        pp.load("circle_center", circle_center, center);
+        pp.load("circle1_center", circle1_center, center);
+        pp.load("circle2_center", circle2_center, center);
+        pp.load("circle3_center", circle3_center, center);
     }
 
     void check_params()
@@ -69,7 +71,8 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     // Problem specific parameters
     int lineout_num_points;
     double r_circle;
-    std::array<double, CH_SPACEDIM> circle_center;
+    std::array<double, CH_SPACEDIM> circle1_center, circle2_center,
+        circle3_center;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

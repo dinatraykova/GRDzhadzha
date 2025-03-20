@@ -10,7 +10,9 @@
 enum
 {
     c_chi,
-    c_circ,
+    c_circ1,
+    c_circ2,
+    c_circ3,
     c_rhoEnergy,
     c_fluxEnergy,
     c_rhoLinMom,
@@ -23,8 +25,8 @@ enum
 namespace DiagnosticVariables
 {
 static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
-    "chi",       "circ",       "rhoEnergy",   "fluxEnergy",
-    "rhoLinMom", "fluxLinMom", "sourceLinMom"};
+    "chi",        "circ1",     "circ2",      "circ3",       "rhoEnergy",
+    "fluxEnergy", "rhoLinMom", "fluxLinMom", "sourceLinMom"};
 }
 
 #endif /* DIAGNOSTICVARIABLES_HPP */
