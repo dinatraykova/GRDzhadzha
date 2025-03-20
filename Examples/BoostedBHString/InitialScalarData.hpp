@@ -70,17 +70,30 @@ template <class background_t> class InitialScalarData
         double pot_lambda_ref = 2.0;
         double pot_eta_ref = 0.1;
 
-        int indxL = static_cast<int>(floor(rho * sqrt(m_params.pot_lambda / pot_lambda_ref) * m_params.pot_eta / pot_eta_ref / m_params.spacing));
-        int indxH = static_cast<int>(ceil(rho  * sqrt(m_params.pot_lambda / pot_lambda_ref) * m_params.pot_eta / pot_eta_ref / m_params.spacing));
+        int indxL = static_cast<int>(
+            floor(rho * sqrt(m_params.pot_lambda / pot_lambda_ref) *
+                  m_params.pot_eta / pot_eta_ref / m_params.spacing));
+        int indxH = static_cast<int>(
+            ceil(rho * sqrt(m_params.pot_lambda / pot_lambda_ref) *
+                 m_params.pot_eta / pot_eta_ref / m_params.spacing));
 
         double f_L = *(m_params.f_profile + indxL);
         double f_H = *(m_params.f_profile + indxH);
         double df_L = *(m_params.df_profile + indxL);
         double df_H = *(m_params.df_profile + indxH);
 
-        double fvals = f_L + (rho * sqrt(m_params.pot_lambda / pot_lambda_ref) * m_params.pot_eta / pot_eta_ref / m_params.spacing - indxL) * (f_H - f_L);
-        double dfvals = df_L + (rho * sqrt(m_params.pot_lambda / pot_lambda_ref) * m_params.pot_eta / pot_eta_ref/ m_params.spacing - indxL) * (df_H - df_L);
-        dfvals *= sqrt(m_params.pot_lambda / pot_lambda_ref) * m_params.pot_eta / pot_eta_ref;
+        double fvals =
+            f_L + (rho * sqrt(m_params.pot_lambda / pot_lambda_ref) *
+                       m_params.pot_eta / pot_eta_ref / m_params.spacing -
+                   indxL) *
+                      (f_H - f_L);
+        double dfvals =
+            df_L + (rho * sqrt(m_params.pot_lambda / pot_lambda_ref) *
+                        m_params.pot_eta / pot_eta_ref / m_params.spacing -
+                    indxL) *
+                       (df_H - df_L);
+        dfvals *= sqrt(m_params.pot_lambda / pot_lambda_ref) *
+                  m_params.pot_eta / pot_eta_ref;
 
         Tensor<1, data_t> grad_f;
         grad_f[0] = dfvals * xx / rho;
@@ -107,14 +120,19 @@ template <class background_t> class InitialScalarData
         vars.phi_Re = phi_Re;
         vars.phi_Im = phi_Im;
 
-        // // data_t gamma_factor = 1.0/sqrt(1.0 - m_params.velocity*m_params.velocity);
-        vars.Pi_Re = 0.0;//gamma_factor * m_params.velocity / metric_vars.lapse * dphi_Re[0];
-        vars.Pi_Im = 0.0;//gamma_factor * m_params.velocity / metric_vars.lapse * dphi_Im[0];
-        FOR1(i)
+        // // data_t gamma_factor = 1.0/sqrt(1.0 -
+        // m_params.velocity*m_params.velocity);
+        vars.Pi_Re = 0.0; // gamma_factor * m_params.velocity /
+                          // metric_vars.lapse * dphi_Re[0];
+        vars.Pi_Im = 0.0; // gamma_factor * m_params.velocity /
+                          // metric_vars.lapse * dphi_Im[0];
+        /*FOR1(i)
         {
-            vars.Pi_Re += -metric_vars.shift[i] * dphi_Re[i] / metric_vars.lapse;
-            vars.Pi_Im += -metric_vars.shift[i] * dphi_Im[i] / metric_vars.lapse;
-        }
+            vars.Pi_Re +=
+                -metric_vars.shift[i] * dphi_Re[i] / metric_vars.lapse;
+            vars.Pi_Im +=
+                -metric_vars.shift[i] * dphi_Im[i] / metric_vars.lapse;
+                }*/
 
         current_cell.store_vars(vars);
     }

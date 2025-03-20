@@ -20,15 +20,16 @@
 #include "FixedGridsTaggingCriterionNew.hpp"
 
 // Problem specific includes
+#include "Circulation.hpp"
 #include "ComplexScalarField.hpp"
 #include "ComplexScalarPotential.hpp"
+#include "CustomExtraction.hpp"
 #include "EnergyConservation.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
 #include "FluxExtraction.hpp"
 #include "InitialScalarData.hpp"
 #include "LinearMomConservation.hpp"
-#include "Circulation.hpp"
 
 // Initial data for field and metric variables
 void BoostedBHScalarLevel::initialData()
@@ -46,7 +47,8 @@ void BoostedBHScalarLevel::initialData()
                    SKIP_GHOST_CELLS);
 
     // Now set the actual evolution variables
-    InitialScalarData<BoostedBH> initial_sf(m_p.initial_params, m_dx, boosted_bh);
+    InitialScalarData<BoostedBH> initial_sf(m_p.initial_params, m_dx,
+                                            boosted_bh);
     BoxLoops::loop(initial_sf, m_state_new, m_state_new, FILL_GHOST_CELLS,
                    disable_simd());
 
@@ -82,11 +84,10 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             linear_momenta(scalar_field, boosted_bh, direction, m_dx,
                            m_p.center);
         Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
-            scalar_field, boosted_bh, m_dx, m_p.center);
+            scalar_field, boosted_bh, m_dx, m_p.circle1_center,
+            m_p.circle2_center, m_p.circle3_center);
         BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
-        BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation), m_state_new,
-                       m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd
         if (m_p.activate_excision == 1)
@@ -144,6 +145,45 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                          m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ1, c_circ1));
+            CustomExtraction circ_extraction1(c_circ1, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle1_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction1.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_1");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ2, c_circ2));
+            CustomExtraction circ_extraction2(c_circ2, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle2_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction2.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_2");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ3, c_circ3));
+            CustomExtraction circ_extraction3(c_circ3, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle3_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction3.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_3");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(
+                VariableType::diagnostic, Interval(c_fluxLinMom, c_fluxLinMom));
+            CustomExtraction fluxX_extraction(
+                c_fluxLinMom, m_p.lineout_num_points, m_p.r_circle, m_p.center,
+                m_dt, m_time, m_restart_time);
+            fluxX_extraction.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path + "flux_x_points");
         }
     }
 }
@@ -172,10 +212,12 @@ void BoostedBHScalarLevel::specificEvalRHS(GRLevelData &a_soln,
 void BoostedBHScalarLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state)
 {
-    // BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+    // BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
+    // m_p.center),
     //                current_state, tagging_criterion);
     BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center,
-                                              m_p.initial_params.d_to_bh, m_p.initial_params.velocity,
+                                              m_p.initial_params.d_to_bh,
+                                              m_p.initial_params.velocity,
                                               m_time),
                    current_state, tagging_criterion);
 }

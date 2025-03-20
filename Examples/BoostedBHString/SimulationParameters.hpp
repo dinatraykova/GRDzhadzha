@@ -41,6 +41,13 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         initial_params.center = bg_params.center;
         initial_params.velocity = bg_params.velocity;
 
+        // Circle extraction params
+        pp.load("lineout_num_points", lineout_num_points, 36);
+        pp.load("r_circle", r_circle, 20.);
+        pp.load("circle1_center", circle1_center, center);
+        pp.load("circle2_center", circle2_center, center);
+        pp.load("circle3_center", circle3_center, center);
+
         // Reading data
         int lines;
         pp.load("lines", lines);
@@ -76,9 +83,9 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     void check_params()
     {
         // warn_parameter("scalar_mass", initial_params.mass,
-        //                initial_params.mass < 0.2 / coarsest_dx / dt_multiplier,
-        //                "oscillations of scalar field do not appear to be "
-        //                "resolved on coarsest level");
+        //                initial_params.mass < 0.2 / coarsest_dx /
+        //                dt_multiplier, "oscillations of scalar field do not
+        //                appear to be " "resolved on coarsest level");
         // warn_parameter("bh_mass", bg_params.mass, bg_params.mass >= 0.0,
         //                "should be >= 0.0");
         FOR(idir)
@@ -96,6 +103,10 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     InitialScalarData<BoostedBH>::params_t initial_params;
     // Collection of parameters necessary for the metric background
     BoostedBH::params_t bg_params;
+    int lineout_num_points;
+    double r_circle;
+    std::array<double, CH_SPACEDIM> circle1_center, circle2_center,
+        circle3_center;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */
