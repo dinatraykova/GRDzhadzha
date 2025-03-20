@@ -17,7 +17,8 @@
 #include "MatterEvolution.hpp"
 
 // For tag cells
-#include "FixedGridsTaggingCriterion.hpp"
+// #include "FixedGridsTaggingCriterion.hpp"
+#include "FixedGridsTaggingCriterionNew.hpp"
 
 // Problem specific includes
 #include "Circulation.hpp"
@@ -202,6 +203,11 @@ void BoostedBHScalarLevel::specificEvalRHS(GRLevelData &a_soln,
 void BoostedBHScalarLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state)
 {
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+    // BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
+    // m_p.center),
+    //                current_state, tagging_criterion);
+    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center,
+                                              m_p.d_to_bh,
+                                              m_p.bg_params.velocity, m_time),
                    current_state, tagging_criterion);
 }

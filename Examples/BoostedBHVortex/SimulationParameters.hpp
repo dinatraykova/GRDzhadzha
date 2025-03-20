@@ -31,6 +31,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         pp.load("scalar_mass", initial_params.mass, 0.5);
         pp.load("scalar_omega", initial_params.omega, 0.5);
         pp.load("scalar_center", initial_params.center, center);
+        pp.load("d_to_bh", d_to_bh, 50.);
 
         // BH data
         pp.load("bh_mass", bg_params.mass, 1.0);
@@ -71,6 +72,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     // Problem specific parameters
     int lineout_num_points;
     double r_circle;
+    double d_to_bh;
     std::array<double, CH_SPACEDIM> circle1_center, circle2_center,
         circle3_center;
 };
