@@ -31,6 +31,7 @@
 #include "FluxExtraction.hpp"
 #include "InitialScalarData.hpp"
 #include "LinearMomConservation.hpp"
+#include "LinearMomConservationY.hpp"
 
 // Initial data for field and metric variables
 void BoostedBHScalarLevel::initialData()
@@ -83,6 +84,8 @@ void BoostedBHScalarLevel::specificPostTimeStep()
         LinearMomConservation<ScalarFieldWithPotential, BoostedBH>
             linear_momenta(scalar_field, boosted_bh, direction, m_dx,
                            m_p.center);
+        LinearMomConservationY<ScalarFieldWithPotential, BoostedBH>
+            linear_momenta_y(scalar_field, boosted_bh, 1, m_dx, m_p.center);
         Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
             scalar_field, boosted_bh, m_dx, m_p.circle1_center,
             m_p.circle2_center, m_p.circle3_center);
@@ -111,6 +114,8 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
             double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
             double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
+            double rhoLinMomY_sum = amr_reductions.sum(c_rhoLinMomY);
+            double sourceLinMomY_sum = amr_reductions.sum(c_sourceLinMomY);
 
             SmallDataIO integral_file(m_p.data_path + "EnergyIntegrals", m_dt,
                                       m_time, m_restart_time,
@@ -119,14 +124,15 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             integral_file.remove_duplicate_time_data();
 
             std::vector<double> data_for_writing = {
-                rhoEnergy_sum, rhoLinMom_sum, sourceLinMom_sum};
+                rhoEnergy_sum, rhoLinMom_sum, sourceLinMom_sum, rhoLinMomY_sum,
+                sourceLinMomY_sum};
 
             // write data
             if (first_step)
             {
-                integral_file.write_header_line({"Energy density.",
-                                                 "Lin. Mom. density",
-                                                 "Lin. Mom. source"});
+                integral_file.write_header_line(
+                    {"Energy density.", "Lin. Mom. density", "Lin. Mom. source",
+                     "Lin. Mom. density y", "Lin. Mom. source y"});
             }
             integral_file.write_time_data_line(data_for_writing);
         }
@@ -141,7 +147,8 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             bool fill_ghosts = false;
             m_gr_amr.m_interpolator->refresh(fill_ghosts);
             m_gr_amr.fill_multilevel_ghosts(
-                VariableType::diagnostic, Interval(c_fluxEnergy, c_fluxLinMom));
+                VariableType::diagnostic,
+                Interval(c_fluxEnergy, c_fluxLinMomY));
             FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                          m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
@@ -175,6 +182,25 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             circ_extraction3.execute_query(m_gr_amr.m_interpolator,
                                            m_p.data_path +
                                                "circulation_points_3");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(
+                VariableType::diagnostic, Interval(c_fluxLinMom, c_fluxLinMom));
+            CustomExtraction fluxX_extraction(
+                c_fluxLinMom, m_p.lineout_num_points, m_p.r_circle, m_p.center,
+                m_dt, m_time, m_restart_time);
+            fluxX_extraction.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path + "flux_x_points");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(
+                VariableType::diagnostic,
+                Interval(c_fluxLinMomY, c_fluxLinMomY));
+            CustomExtraction fluxY_extraction(
+                c_fluxLinMomY, m_p.lineout_num_points, m_p.r_circle, m_p.center,
+                m_dt, m_time, m_restart_time);
+            fluxY_extraction.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path + "flux_y_points");
         }
     }
 }
