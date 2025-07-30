@@ -21,7 +21,7 @@ class InitialScalarData
     {
         double mass;
         double amplitude;
-        double omega;
+        double radius;
         std::array<double, CH_SPACEDIM> center;
     };
 
@@ -42,16 +42,16 @@ class InitialScalarData
         const data_t rho = sqrt(rho2);
         const data_t cos_phi = coords.x / rho;
         const data_t sin_phi = coords.y / rho;
+        const double k = 1.84 / m_params.radius;
 
-        data_t BesselJ = m_params.amplitude * j1(m_params.omega * rho);
+        data_t BesselJ = m_params.amplitude * j1(k * rho);
 
-        const data_t omega0 = sqrt(m_params.omega * m_params.omega +
-                                   m_params.mass * m_params.mass);
+        const double omega = sqrt(k * k + m_params.mass * m_params.mass);
 
         vars.phi_Re = BesselJ * cos_phi;
         vars.phi_Im = BesselJ * sin_phi;
-        vars.Pi_Re = BesselJ * omega0 * sin_phi;
-        vars.Pi_Im = -BesselJ * omega0 * cos_phi;
+        vars.Pi_Re = BesselJ * omega * sin_phi;
+        vars.Pi_Im = -BesselJ * omega * cos_phi;
 
         current_cell.store_vars(vars);
     }

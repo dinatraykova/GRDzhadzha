@@ -24,15 +24,20 @@ class FixedGridsTaggingCriterion
     const double m_d_to_bh;
     const double m_velocity;
     const double m_time;
+    const int m_max_vortex_lvl;
+    const double m_vortex_regrid_factor;
 
   public:
     FixedGridsTaggingCriterion(const double dx, const int a_level,
                                const double a_L,
                                const std::array<double, CH_SPACEDIM> a_center,
                                const double a_d_to_bh, const double a_velocity,
-                               const double a_time)
+                               const double a_time, const int a_max_vortex_lvl,
+                               const double a_vortex_regrid_factor)
         : m_dx(dx), m_L(a_L), m_level(a_level), m_center(a_center),
-          m_d_to_bh(a_d_to_bh), m_velocity(a_velocity), m_time(a_time){};
+          m_d_to_bh(a_d_to_bh), m_velocity(a_velocity), m_time(a_time),
+          m_max_vortex_lvl(a_max_vortex_lvl),
+          m_vortex_regrid_factor(a_vortex_regrid_factor){};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
@@ -54,9 +59,10 @@ class FixedGridsTaggingCriterion
 
         auto phi_Re = current_cell.load_vars(c_phi_Re);
         auto phi_Im = current_cell.load_vars(c_phi_Im);
-        if (m_level < 3)
+        if (m_level < m_max_vortex_lvl)
         {
-            criterion = abs(phi_Re) / 0.5;
+            criterion = abs(phi_Re * phi_Re + phi_Im * phi_Im) /
+                        (0.2 / m_vortex_regrid_factor);
         }
         criterion = simd_conditional(regrid_bh, 100.0, criterion);
         //        criterion = simd_conditional(regrid_string, 100.0, criterion);

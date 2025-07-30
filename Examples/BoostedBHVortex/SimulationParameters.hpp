@@ -29,9 +29,11 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         // Initial SF
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("scalar_mass", initial_params.mass, 0.5);
-        pp.load("scalar_omega", initial_params.omega, 0.5);
-        pp.load("scalar_center", initial_params.center, center);
+        pp.load("vortex_radius", initial_params.radius, 5.);
+        pp.load("vortex_center", initial_params.center, center);
         pp.load("d_to_bh", d_to_bh, 50.);
+        pp.load("max_vortex_lvl", max_vortex_lvl, 3);
+        pp.load("vortex_regrid_factor", vortex_regrid_factor, 1.);
 
         // BH data
         pp.load("bh_mass", bg_params.mass, 1.0);
@@ -44,6 +46,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         pp.load("circle1_center", circle1_center, center);
         pp.load("circle2_center", circle2_center, center);
         pp.load("circle3_center", circle3_center, center);
+        pp.load("circle4_center", circle4_center, center);
     }
 
     void check_params()
@@ -73,8 +76,10 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     int lineout_num_points;
     double r_circle;
     double d_to_bh;
+    int max_vortex_lvl;
+    double vortex_regrid_factor;
     std::array<double, CH_SPACEDIM> circle1_center, circle2_center,
-        circle3_center;
+        circle3_center, circle4_center;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

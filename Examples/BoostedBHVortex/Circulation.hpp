@@ -36,15 +36,17 @@ template <class matter_t, class background_t> class Circulation
     const std::array<double, CH_SPACEDIM> m_center1; //!< Circle center 1
     const std::array<double, CH_SPACEDIM> m_center2; //!< Circle center 2
     const std::array<double, CH_SPACEDIM> m_center3; //!< Circle center 3
+    const std::array<double, CH_SPACEDIM> m_center4;
 
   public:
     Circulation(matter_t a_matter, background_t a_background, double a_dx,
                 std::array<double, CH_SPACEDIM> a_center1,
                 std::array<double, CH_SPACEDIM> a_center2,
-                std::array<double, CH_SPACEDIM> a_center3)
+                std::array<double, CH_SPACEDIM> a_center3,
+                std::array<double, CH_SPACEDIM> a_center4)
         : m_matter(a_matter), m_deriv(a_dx), m_dx(a_dx),
           m_background(a_background), m_center1(a_center1),
-          m_center2(a_center2), m_center3(a_center3)
+          m_center2(a_center2), m_center3(a_center3), m_center4(a_center4)
     {
     }
 
@@ -58,6 +60,7 @@ template <class matter_t, class background_t> class Circulation
         Coordinates<data_t> coords1(current_cell, m_dx, m_center1);
         Coordinates<data_t> coords2(current_cell, m_dx, m_center2);
         Coordinates<data_t> coords3(current_cell, m_dx, m_center3);
+        Coordinates<data_t> coords4(current_cell, m_dx, m_center4);
 
         // some useful quantities
         using namespace TensorAlgebra;
@@ -72,19 +75,24 @@ template <class matter_t, class background_t> class Circulation
             vars.phi_Re * vars.phi_Re + vars.phi_Im * vars.phi_Im, 1.e-2);
 
         Tensor<1, data_t> dl1;
-        dl1[0] = -coords1.y / rho1;
-        dl1[1] = coords1.x / rho1;
+        dl1[0] = -coords1.y;
+        dl1[1] = coords1.x;
         dl1[2] = 0;
 
         Tensor<1, data_t> dl2;
-        dl2[0] = -coords2.y / rho2;
-        dl2[1] = coords2.x / rho2;
+        dl2[0] = -coords2.y;
+        dl2[1] = coords2.x;
         dl2[2] = 0;
 
         Tensor<1, data_t> dl3;
-        dl3[0] = -coords3.y / rho3;
-        dl3[1] = coords3.x / rho3;
+        dl3[0] = -coords3.y;
+        dl3[1] = coords3.x;
         dl3[2] = 0;
+
+        Tensor<1, data_t> dl4;
+        dl4[0] = -coords4.y;
+        dl4[1] = coords4.x;
+        dl4[2] = 0;
 
         Tensor<1, data_t> SiP;
         FOR1(i)
@@ -104,9 +112,14 @@ template <class matter_t, class background_t> class Circulation
         FOR2(i, j) { circ3 += delta(i, j) * dl3[i] * SiP[j]; }
         circ3 = circ3 / phi2;
 
+        data_t circ4 = 0.;
+        FOR2(i, j) { circ4 += delta(i, j) * dl4[i] * SiP[j]; }
+        circ4 = circ4 / phi2;
+
         current_cell.store_vars(circ1, c_circ1);
         current_cell.store_vars(circ2, c_circ2);
         current_cell.store_vars(circ3, c_circ3);
+        current_cell.store_vars(circ4, c_circ4);
     }
 };
 
