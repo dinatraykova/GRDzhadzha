@@ -41,8 +41,16 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
         if (coords.get_radius() < m_inner_r || coords.get_radius() > m_outer_r)
         {
             current_cell.store_vars(0.0, c_rhoLinMom);
-            current_cell.store_vars(0.0, c_rhoEnergy);
             current_cell.store_vars(0.0, c_sourceLinMom);
+            current_cell.store_vars(0.0, c_rhoLinMomY);
+            current_cell.store_vars(0.0, c_sourceLinMomY);
+        }
+
+        if (coords.get_radius() < 0.7)
+        {
+            current_cell.store_vars(0.0, c_rhoEnergy);
+            current_cell.store_vars(0.0, c_rhoParticle);
+            current_cell.store_vars(0.0, c_rhoDensity);
         }
     }
 };

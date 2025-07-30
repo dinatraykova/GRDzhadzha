@@ -25,7 +25,8 @@
 #include "ComplexScalarField.hpp"
 #include "ComplexScalarPotential.hpp"
 #include "CustomExtraction.hpp"
-#include "EnergyConservation.hpp"
+// #include "EnergyConservation.hpp"
+#include "Densities.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
 #include "FluxExtraction.hpp"
@@ -78,7 +79,7 @@ void BoostedBHScalarLevel::specificPostTimeStep()
         ComplexScalarPotential potential(m_p.initial_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedBH boosted_bh(m_p.bg_params, m_dx);
-        EnergyConservation<ScalarFieldWithPotential, BoostedBH> energies(
+        Densities<ScalarFieldWithPotential, BoostedBH> densities(
             scalar_field, boosted_bh, m_dx, m_p.center);
         int direction = 0; // we want the x direction for the momentum
         LinearMomConservation<ScalarFieldWithPotential, BoostedBH>
@@ -88,8 +89,9 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             linear_momenta_y(scalar_field, boosted_bh, 1, m_dx, m_p.center);
         Circulation<ScalarFieldWithPotential, BoostedBH> circulation(
             scalar_field, boosted_bh, m_dx, m_p.circle1_center,
-            m_p.circle2_center, m_p.circle3_center);
-        BoxLoops::loop(make_compute_pack(energies, linear_momenta, circulation),
+            m_p.circle2_center, m_p.circle3_center, m_p.circle4_center);
+        BoxLoops::loop(make_compute_pack(densities, linear_momenta,
+                                         linear_momenta_y, circulation),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd
@@ -112,6 +114,8 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             // integrate the densities and write to a file
             AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
             double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
+            double rhoParticle_sum = amr_reductions.sum(c_rhoParticle);
+            double rhoDensity_sum = amr_reductions.sum(c_rhoDensity);
             double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
             double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
             double rhoLinMomY_sum = amr_reductions.sum(c_rhoLinMomY);
@@ -124,14 +128,16 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             integral_file.remove_duplicate_time_data();
 
             std::vector<double> data_for_writing = {
-                rhoEnergy_sum, rhoLinMom_sum, sourceLinMom_sum, rhoLinMomY_sum,
+                rhoEnergy_sum,    rhoParticle_sum,  rhoDensity_sum,
+                rhoLinMom_sum,    sourceLinMom_sum, rhoLinMomY_sum,
                 sourceLinMomY_sum};
 
             // write data
             if (first_step)
             {
                 integral_file.write_header_line(
-                    {"Energy density.", "Lin. Mom. density", "Lin. Mom. source",
+                    {"Energy density.", "Particle density", "Density",
+                     "Lin. Mom. density", "Lin. Mom. source",
                      "Lin. Mom. density y", "Lin. Mom. source y"});
             }
             integral_file.write_time_data_line(data_for_writing);
@@ -148,7 +154,7 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             m_gr_amr.m_interpolator->refresh(fill_ghosts);
             m_gr_amr.fill_multilevel_ghosts(
                 VariableType::diagnostic,
-                Interval(c_fluxEnergy, c_fluxLinMomY));
+                Interval(c_fluxLinMom, c_fluxLinMomY));
             FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                          m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator, m_p.data_path);
@@ -182,6 +188,16 @@ void BoostedBHScalarLevel::specificPostTimeStep()
             circ_extraction3.execute_query(m_gr_amr.m_interpolator,
                                            m_p.data_path +
                                                "circulation_points_3");
+
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                            Interval(c_circ4, c_circ4));
+            CustomExtraction circ_extraction4(c_circ4, m_p.lineout_num_points,
+                                              m_p.r_circle, m_p.circle4_center,
+                                              m_dt, m_time, m_restart_time);
+            circ_extraction4.execute_query(m_gr_amr.m_interpolator,
+                                           m_p.data_path +
+                                               "circulation_points_4");
 
             m_gr_amr.m_interpolator->refresh(fill_ghosts);
             m_gr_amr.fill_multilevel_ghosts(
@@ -229,11 +245,12 @@ void BoostedBHScalarLevel::specificEvalRHS(GRLevelData &a_soln,
 void BoostedBHScalarLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state)
 {
-    // BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
+    //    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
     // m_p.center),
     //                current_state, tagging_criterion);
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center,
-                                              m_p.d_to_bh,
-                                              m_p.bg_params.velocity, m_time),
+    BoxLoops::loop(FixedGridsTaggingCriterion(
+                       m_dx, m_level, m_p.L, m_p.center, m_p.d_to_bh,
+                       m_p.bg_params.velocity, m_time, m_p.max_vortex_lvl,
+                       m_p.vortex_regrid_factor),
                    current_state, tagging_criterion);
 }
