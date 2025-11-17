@@ -26,19 +26,23 @@ class SimulationParameters : public FixedBGSimulationParametersBase
 
     void read_params(GRParmParse &pp)
     {
-        // Initial SF
-        pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
-        pp.load("scalar_mass", initial_params.mass, 0.5);
-        pp.load("vortex_radius", initial_params.radius, 5.);
-        pp.load("vortex_center", initial_params.center, center);
-        pp.load("d_to_bh", d_to_bh, 50.);
-        pp.load("max_vortex_lvl", max_vortex_lvl, 3);
-        pp.load("vortex_regrid_factor", vortex_regrid_factor, 1.);
-
         // BH data
         pp.load("bh_mass", bg_params.mass, 1.0);
         pp.load("bh_velocity", bg_params.velocity, 0.0);
         pp.load("bh_center", bg_params.center, center);
+
+        // Initial SF
+        pp.load("scalar_amplitude", initial_params.amplitude, 2.5e-4);
+        pp.load("scalar_mass", initial_params.mass, 0.1);
+        pp.load("vortex_radius", initial_params.radius, 5.);
+        // pp.load("vortex_center", initial_params.center, center);
+        pp.load("d_to_bh", initial_params.d_to_bh, 100.);
+        pp.load("max_vortex_lvl", max_vortex_lvl, 3);
+        pp.load("vortex_refine_threshold", vortex_refine_threshold, 2.e-3);
+        initial_params.center = center;
+        initial_params.velocity = bg_params.velocity;
+        pp.load("tau_target", tau_target, 3.);
+        pp.load("Nlayer", Nlayer, 80.);
 
         // Circle extraction params
         pp.load("lineout_num_points", lineout_num_points, 36);
@@ -69,17 +73,19 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     }
 
     // Collection of parameters necessary for the initial conditions
-    InitialScalarData::params_t initial_params;
+    InitialScalarData<BoostedMink>::params_t initial_params;
     // Collection of parameters necessary for the metric background
     BoostedMink::params_t bg_params;
     // Problem specific parameters
     int lineout_num_points;
     double r_circle;
-    double d_to_bh;
+    // double d_to_bh;
     int max_vortex_lvl;
-    double vortex_regrid_factor;
+    double vortex_refine_threshold;
     std::array<double, CH_SPACEDIM> circle1_center, circle2_center,
         circle3_center, circle4_center;
+    double tau_target;
+    double Nlayer;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

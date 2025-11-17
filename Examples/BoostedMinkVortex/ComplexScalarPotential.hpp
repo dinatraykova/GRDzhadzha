@@ -12,11 +12,12 @@ class ComplexScalarPotential
 {
   protected:
     //    const double m_mu;
-    const InitialScalarData::params_t m_initial_params;
+    const InitialScalarData<BoostedMink>::params_t m_initial_params;
 
   public:
     //! The constructor
-    ComplexScalarPotential(const InitialScalarData::params_t a_initial_params)
+    ComplexScalarPotential(
+        const InitialScalarData<BoostedMink>::params_t a_initial_params)
         : m_initial_params(a_initial_params)
     {
     }
